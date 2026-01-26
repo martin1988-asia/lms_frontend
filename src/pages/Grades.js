@@ -6,7 +6,8 @@ function Grades() {
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  // ✅ Removed unused setter
+  const [success] = useState("");
   const role = localStorage.getItem("role"); // role stored after login
 
   useEffect(() => {
