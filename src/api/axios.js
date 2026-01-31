@@ -2,16 +2,31 @@ import axios from "axios";
 
 // ✅ Create Axios instance with base URL
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000", // use env var in production
+  baseURL: "https://pok-uncubic-pearlie.ngrok-free.dev/api/",  // ✅ Ngrok backend URL
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// ✅ Helper: clear all auth keys
+function clearAuth() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("username");
+  localStorage.removeItem("role");
+  sessionStorage.removeItem("accessToken");
+  sessionStorage.removeItem("refreshToken");
+  sessionStorage.removeItem("username");
+  sessionStorage.removeItem("role");
+}
+
 // ✅ Request interceptor: attach access token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access");
+    const token =
+      localStorage.getItem("accessToken") ||
+      sessionStorage.getItem("accessToken");
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,17 +45,26 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem("refresh");
+        const refreshToken =
+          localStorage.getItem("refreshToken") ||
+          sessionStorage.getItem("refreshToken");
+
         if (refreshToken) {
+          // ✅ Detect storage type (local vs session)
+          const storage = localStorage.getItem("refreshToken")
+            ? localStorage
+            : sessionStorage;
+
+          // ✅ Correct SimpleJWT refresh endpoint
           const res = await axios.post(
-            `${process.env.REACT_APP_API_URL || "http://localhost:8000"}/accounts/refresh/`,
+            "https://pok-uncubic-pearlie.ngrok-free.dev/api/token/refresh/",
             { refresh: refreshToken }
           );
 
-          // Save new tokens
-          localStorage.setItem("access", res.data.access);
+          // Save new tokens in the same storage type
+          storage.setItem("accessToken", res.data.access);
           if (res.data.refresh) {
-            localStorage.setItem("refresh", res.data.refresh);
+            storage.setItem("refreshToken", res.data.refresh);
           }
 
           // Retry original request with new token
@@ -49,10 +73,8 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         // If refresh fails, logout user
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
-        localStorage.removeItem("role");
-        localStorage.removeItem("email");
+        clearAuth();
+        alert("Session expired. Please log in again.");
         window.location.href = "/login";
       }
     }
