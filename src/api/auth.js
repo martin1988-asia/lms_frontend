@@ -1,17 +1,17 @@
 import api from "./axios";
 
-// Login function
-export const login = (email, password) => {
-  return api.post("/accounts/login/", {
-    email,
+// ✅ JWT Login function (now using username)
+export const login = (username, password) => {
+  return api.post("token/", {
+    username,
     password,
   });
 };
 
-// Signup function
-export const signup = (email, password, role) => {
-  return api.post("/accounts/signup/", {
-    email,
+// Signup function (update if backend expects username instead of email)
+export const signup = (username, password, role) => {
+  return api.post("auth/signup/", {
+    username,
     password,
     role,
   });
