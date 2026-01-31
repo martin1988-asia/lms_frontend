@@ -10,22 +10,35 @@ function Assignments() {
   const role = localStorage.getItem("role"); // role stored after login
 
   useEffect(() => {
-    api.get("/users/assignments/")
-      .then((res) => {
-        setAssignments(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
+    const fetchAssignments = async () => {
+      try {
+        const res = await api.get("assignments/");
+        console.log("Assignments API response:", res.data);
+
+        // ✅ Normalize response to always be an array
+        if (Array.isArray(res.data)) {
+          setAssignments(res.data);
+        } else if (Array.isArray(res.data.assignments)) {
+          setAssignments(res.data.assignments);
+        } else {
+          setAssignments([]);
+        }
+      } catch (err) {
+        console.error("Error fetching assignments:", err);
         setError("Failed to load assignments.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchAssignments();
   }, []);
 
   const handleSubmit = async (assignmentId) => {
     setError("");
     setSuccess("");
     try {
-      await api.post(`/users/assignments/${assignmentId}/submit/`);
+      await api.post(`assignments/${assignmentId}/submit/`);
       setSuccess("Assignment submitted successfully!");
       setAssignments(assignments.map(a =>
         a.id === assignmentId ? { ...a, status: "submitted" } : a

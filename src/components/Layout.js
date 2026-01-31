@@ -13,8 +13,8 @@ function Layout({ children }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
+    localStorage.removeItem("accessToken"); // ✅ corrected
+    localStorage.removeItem("refreshToken"); // ✅ corrected
     localStorage.removeItem("role");
     localStorage.removeItem("email");
     navigate("/login");
@@ -79,10 +79,12 @@ function Layout({ children }) {
     textDecoration: "none"
   };
 
-  const activeLinkStyle = {
-    fontWeight: "bold",
-    textDecoration: "underline"
-  };
+  // ✅ React Router v6: use style function instead of activeStyle
+  const navLinkStyle = ({ isActive }) => ({
+    ...linkStyle,
+    fontWeight: isActive ? "bold" : "normal",
+    textDecoration: isActive ? "underline" : "none"
+  });
 
   return (
     <div style={themeStyles}>
@@ -139,24 +141,24 @@ function Layout({ children }) {
         <h3 style={{ marginBottom: "20px" }}>Navigation</h3>
         {role === "student" && (
           <>
-            <NavLink to="/dashboard" style={linkStyle} activeStyle={activeLinkStyle}>Dashboard</NavLink>
-            <NavLink to="/courses" style={linkStyle} activeStyle={activeLinkStyle}>Courses</NavLink>
-            <NavLink to="/assignments" style={linkStyle} activeStyle={activeLinkStyle}>Assignments</NavLink>
-            <NavLink to="/grades" style={linkStyle} activeStyle={activeLinkStyle}>Grades</NavLink>
+            <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
+            <NavLink to="/courses" style={navLinkStyle}>Courses</NavLink>
+            <NavLink to="/assignments" style={navLinkStyle}>Assignments</NavLink>
+            <NavLink to="/grades" style={navLinkStyle}>Grades</NavLink>
           </>
         )}
         {role === "instructor" && (
           <>
-            <NavLink to="/dashboard" style={linkStyle} activeStyle={activeLinkStyle}>Dashboard</NavLink>
-            <NavLink to="/manage-courses" style={linkStyle} activeStyle={activeLinkStyle}>Manage Courses</NavLink>
-            <NavLink to="/grade-submissions" style={linkStyle} activeStyle={activeLinkStyle}>Grade Submissions</NavLink>
+            <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
+            <NavLink to="/manage-courses" style={navLinkStyle}>Manage Courses</NavLink>
+            <NavLink to="/grade-submissions" style={navLinkStyle}>Grade Submissions</NavLink>
           </>
         )}
         {role === "admin" && (
           <>
-            <NavLink to="/dashboard" style={linkStyle} activeStyle={activeLinkStyle}>Dashboard</NavLink>
-            <NavLink to="/users" style={linkStyle} activeStyle={activeLinkStyle}>User Management</NavLink>
-            <NavLink to="/analytics" style={linkStyle} activeStyle={activeLinkStyle}>Analytics</NavLink>
+            <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
+            <NavLink to="/users" style={navLinkStyle}>User Management</NavLink>
+            <NavLink to="/analytics" style={navLinkStyle}>Analytics</NavLink>
           </>
         )}
       </div>
@@ -177,10 +179,10 @@ function Layout({ children }) {
           © {new Date().getFullYear()} LMS Project — Built with ❤️ by Higino
         </p>
         <p style={{ margin: "5px 0", fontSize: "14px" }}>
-          <NavLink to="/dashboard" style={{ color: "#3498db", textDecoration: "none", marginRight: "15px" }} activeStyle={activeLinkStyle}>Dashboard</NavLink>
-          <NavLink to="/courses" style={{ color: "#3498db", textDecoration: "none", marginRight: "15px" }} activeStyle={activeLinkStyle}>Courses</NavLink>
-          <NavLink to="/assignments" style={{ color: "#3498db", textDecoration: "none", marginRight: "15px" }} activeStyle={activeLinkStyle}>Assignments</NavLink>
-          <NavLink to="/grades" style={{ color: "#3498db", textDecoration: "none" }} activeStyle={activeLinkStyle}>Grades</NavLink>
+          <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
+          <NavLink to="/courses" style={navLinkStyle}>Courses</NavLink>
+          <NavLink to="/assignments" style={navLinkStyle}>Assignments</NavLink>
+          <NavLink to="/grades" style={navLinkStyle}>Grades</NavLink>
         </p>
       </footer>
     </div>

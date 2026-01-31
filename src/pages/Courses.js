@@ -10,22 +10,35 @@ function Courses() {
   const role = localStorage.getItem("role"); // role stored after login
 
   useEffect(() => {
-    api.get("/users/courses/")
-      .then((res) => {
-        setCourses(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await api.get("courses/");
+        console.log("Courses API response:", res.data);
+
+        // ✅ Normalize response to always be an array
+        if (Array.isArray(res.data)) {
+          setCourses(res.data);
+        } else if (Array.isArray(res.data.courses)) {
+          setCourses(res.data.courses);
+        } else {
+          setCourses([]);
+        }
+      } catch (err) {
+        console.error("Error fetching courses:", err);
         setError("Failed to load courses.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchCourses();
   }, []);
 
   const handleEnroll = async (courseId) => {
     setError("");
     setSuccess("");
     try {
-      await api.post(`/users/courses/${courseId}/enroll/`);
+      await api.post(`courses/${courseId}/enroll/`);
       setSuccess("Successfully enrolled!");
     } catch {
       setError("Failed to enroll. Please try again.");

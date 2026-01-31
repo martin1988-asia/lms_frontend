@@ -10,8 +10,9 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
-  const { token } = useParams(); // ✅ token from reset link
+  const { uidb64, token } = useParams(); // ✅ both come from reset link
 
   const validateForm = () => {
     if (password.length < 6) {
@@ -34,22 +35,28 @@ function ResetPassword() {
     setLoading(true);
 
     try {
-      // ✅ Call backend reset password endpoint
-      await api.post("/accounts/reset-password/", {
-        token,
+      // ✅ Call backend reset password endpoint with uid + token in URL
+      const res = await api.post(`/accounts/reset-password/${uidb64}/${token}/`, {
         password,
       });
 
-      setSuccess("Password reset successful! Redirecting to login...");
+      console.log("Reset response:", res.data);
+
+      setSuccess("✅ Password reset successful! Redirecting to login...");
 
       setTimeout(() => {
         navigate("/login");
-      }, 1500);
+      }, 2000);
     } catch (err) {
+      console.error("Reset error:", err.response?.data || err.message);
       if (err.response?.status === 400) {
-        setError("Invalid or expired reset link.");
+        setError(err.response?.data?.error || "Invalid or expired reset link.");
       } else {
-        setError("Server error. Please try again later.");
+        setError(
+          err.response?.data?.detail ||
+          err.response?.data?.message ||
+          "Server error. Please try again later."
+        );
       }
     } finally {
       setLoading(false);
@@ -81,6 +88,7 @@ function ResetPassword() {
         {success && <p style={{ color: "green", marginBottom: "15px" }}>{success}</p>}
 
         <form onSubmit={handleSubmit} autoComplete="off">
+          {/* New Password */}
           <div style={{ marginBottom: "15px", textAlign: "left" }}>
             <label style={{ display: "block", marginBottom: "5px", color: "#555" }}>New Password</label>
             <div style={{ display: "flex", alignItems: "center" }}>
@@ -115,6 +123,7 @@ function ResetPassword() {
             </div>
           </div>
 
+          {/* Confirm Password */}
           <div style={{ marginBottom: "20px", textAlign: "left" }}>
             <label style={{ display: "block", marginBottom: "5px", color: "#555" }}>Confirm Password</label>
             <div style={{ display: "flex", alignItems: "center" }}>
@@ -149,6 +158,7 @@ function ResetPassword() {
             </div>
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}

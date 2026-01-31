@@ -9,6 +9,8 @@ import Assignments from "./pages/Assignments";
 import Grades from "./pages/Grades";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import UserManagement from "./pages/UserManagement";
 import Analytics from "./pages/Analytics";
 import ManageCourses from "./pages/ManageCourses";
@@ -19,6 +21,12 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 
+// ✅ Environment variable (safe logging)
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+if (process.env.NODE_ENV !== "production") {
+  console.log("Backend URL:", API_URL);
+}
+
 function App() {
   return (
     <Router>
@@ -27,12 +35,14 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:uidb64/:token" element={<ResetPassword />} />
 
         {/* -------------------- Protected Routes -------------------- */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["student", "instructor", "admin"]}>
               <Layout>
                 <Dashboard />
               </Layout>
@@ -42,7 +52,7 @@ function App() {
         <Route
           path="/courses"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["student", "instructor", "admin"]}>
               <Layout>
                 <Courses />
               </Layout>
@@ -52,7 +62,7 @@ function App() {
         <Route
           path="/assignments"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["student", "instructor"]}>
               <Layout>
                 <Assignments />
               </Layout>
@@ -62,7 +72,7 @@ function App() {
         <Route
           path="/grades"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["student", "instructor"]}>
               <Layout>
                 <Grades />
               </Layout>

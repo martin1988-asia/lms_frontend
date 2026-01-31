@@ -11,7 +11,8 @@ function SubmissionDetail() {
   const role = localStorage.getItem("role");
 
   useEffect(() => {
-    api.get(`/api/submissions/${id}/`)
+    // ✅ Corrected endpoint
+    api.get(`submissions/${id}/`)
       .then((res) => {
         setSubmission(res.data);
         setLoading(false);
@@ -26,7 +27,8 @@ function SubmissionDetail() {
     setError("");
     setSuccess("");
     try {
-      await api.post(`/api/submissions/${id}/resubmit/`);
+      // ✅ Corrected endpoint
+      await api.post(`submissions/${id}/resubmit/`);
       setSuccess("Submission resubmitted successfully!");
       setSubmission({ ...submission, status: "resubmitted" });
     } catch {
@@ -41,7 +43,8 @@ function SubmissionDetail() {
     setError("");
     setSuccess("");
     try {
-      await api.post(`/api/submissions/${id}/grade/`, { grade, feedback });
+      // ✅ Corrected endpoint
+      await api.post(`submissions/${id}/grade/`, { grade, feedback });
       setSuccess("Submission graded successfully!");
       setSubmission({ ...submission, grade, feedback });
     } catch {

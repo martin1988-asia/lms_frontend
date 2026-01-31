@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.3",
     "chart.js": "^4.5.1",
+    "jwt-decode": "^4.0.0",
     "react": "^19.2.3",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.3",
@@ -22,6 +23,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:8000",
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -44,6 +46,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
     "babel-loader": "^10.0.0",
     "html-webpack-plugin": "^5.6.6",
+    "source-map-loader": "^5.0.0",
     "webpack-dev-server": "^5.2.3"
   }
 }

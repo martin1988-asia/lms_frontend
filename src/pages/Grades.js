@@ -6,20 +6,31 @@ function Grades() {
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // ✅ Removed unused setter
-  const [success] = useState("");
   const role = localStorage.getItem("role"); // role stored after login
 
   useEffect(() => {
-    api.get("/users/submissions/") // ✅ endpoint for student submissions/grades
-      .then((res) => {
-        setGrades(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
+    const fetchGrades = async () => {
+      try {
+        const res = await api.get("submissions/");
+        console.log("Grades API response:", res.data);
+
+        // ✅ Normalize response to always be an array
+        if (Array.isArray(res.data)) {
+          setGrades(res.data);
+        } else if (Array.isArray(res.data.submissions)) {
+          setGrades(res.data.submissions);
+        } else {
+          setGrades([]);
+        }
+      } catch (err) {
+        console.error("Error fetching grades:", err);
         setError("Failed to load grades.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchGrades();
   }, []);
 
   if (loading) {
@@ -39,7 +50,7 @@ function Grades() {
     );
   }
 
-  if (error && !success) {
+  if (error) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
         <p style={{ color: "red" }}>{error}</p>
@@ -70,9 +81,6 @@ function Grades() {
       <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
         {role === "student" ? "Your Grades" : "Grades Overview"}
       </h2>
-
-      {success && <p style={{ color: "green", marginBottom: "15px" }}>{success}</p>}
-      {error && <p style={{ color: "red", marginBottom: "15px" }}>{error}</p>}
 
       {grades.length > 0 ? (
         <table style={{

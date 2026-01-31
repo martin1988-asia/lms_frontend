@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { jwtDecode } from "jwt-decode"; // ✅ decode JWT payload
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // Django JWT expects "username"
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
@@ -13,8 +14,8 @@ function Login() {
   const navigate = useNavigate();
 
   const validateForm = () => {
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
+    if (!username || !password) {
+      setError("Please fill in all fields.");
       return false;
     }
     if (password.length < 6) {
@@ -33,44 +34,49 @@ function Login() {
     setLoading(true);
 
     try {
-      // ✅ Call backend login endpoint
-      const res = await api.post("/accounts/login/", { email, password });
+      // ✅ Correct backend JWT endpoint (baseURL already includes /api/)
+      const res = await api.post("token/", {
+        username,
+        password,
+      });
 
-      // ✅ Save tokens and role in localStorage
-      if (rememberMe) {
-        localStorage.setItem("access", res.data.access);
-        localStorage.setItem("refresh", res.data.refresh);
-        if (res.data.role) {
-          localStorage.setItem("role", res.data.role);
-        }
-      } else {
-        sessionStorage.setItem("access", res.data.access);
-        sessionStorage.setItem("refresh", res.data.refresh);
-        if (res.data.role) {
-          sessionStorage.setItem("role", res.data.role);
-        }
+      console.log("Login response:", res.data);
+
+      const { access, refresh } = res.data;
+
+      // ✅ Decode token to extract role (make sure backend includes "role" claim)
+      let role = "student";
+      try {
+        const decoded = jwtDecode(access);
+        role = decoded.role || "student";
+      } catch (decodeError) {
+        console.warn("Could not decode role from token:", decodeError);
       }
+
+      // ✅ Save tokens + role
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("accessToken", access);
+      storage.setItem("refreshToken", refresh);
+      storage.setItem("username", username);
+      storage.setItem("role", role);
 
       setSuccess("Login successful! Redirecting...");
 
-      // ✅ Redirect based on role
+      // ✅ Redirect to dashboard
       setTimeout(() => {
-        switch (res.data.role) {
-          case "admin":
-            navigate("/analytics");
-            break;
-          case "instructor":
-            navigate("/manage-courses");
-            break;
-          default:
-            navigate("/dashboard");
-        }
+        navigate("/dashboard");
       }, 1500);
     } catch (err) {
+      console.error("Login error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        setError("Invalid email or password. Please try again.");
+        setError("Invalid username or password. Please try again.");
       } else {
-        setError("Server error. Please try again later.");
+        setError(
+          err.response?.data?.detail ||
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Server error. Please try again later."
+        );
       }
     } finally {
       setLoading(false);
@@ -103,11 +109,11 @@ function Login() {
 
         <form onSubmit={handleSubmit} autoComplete="off">
           <div style={{ marginBottom: "15px", textAlign: "left" }}>
-            <label style={{ display: "block", marginBottom: "5px", color: "#555" }}>Email</label>
+            <label style={{ display: "block", marginBottom: "5px", color: "#555" }}>Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               style={{
                 width: "100%",

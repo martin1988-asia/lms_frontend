@@ -21,29 +21,30 @@ function Dashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("access");
+    const username =
+      localStorage.getItem("username") || sessionStorage.getItem("username");
+    const role =
+      localStorage.getItem("role") || sessionStorage.getItem("role");
+    const token =
+      localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
     if (!token) {
       setProfile({ email: "Not logged in", role: "Unknown" });
       return;
     }
 
-    // ✅ Fetch current user
-    api.get("/api/accounts/users/me/")
-      .then((res) => setProfile(res.data))
-      .catch(() => {
-        setError("Failed to fetch user profile.");
-        setProfile({ email: "Error fetching user", role: "Error" });
-      });
+    // ✅ Build profile from stored values
+    setProfile({ email: username, role: role });
 
     // ✅ Fetch courses
-    api.get("/users/courses/")
+    api.get("courses/")
       .then((res) => setCourses(res.data))
-      .catch(() => {});
+      .catch(() => setError("Failed to fetch courses"));
 
     // ✅ Fetch assignments
-    api.get("/users/assignments/")
+    api.get("assignments/")
       .then((res) => setAssignments(res.data))
-      .catch(() => {});
+      .catch(() => setError("Failed to fetch assignments"));
   }, []);
 
   if (!profile) {
@@ -52,11 +53,7 @@ function Dashboard() {
         <p>Loading dashboard...</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", padding: "20px" }}>
           {[...Array(4)].map((_, i) => (
-            <div key={i} style={{
-              background: "#eee",
-              height: "120px",
-              borderRadius: "8px"
-            }} />
+            <div key={i} style={{ background: "#eee", height: "120px", borderRadius: "8px" }} />
           ))}
         </div>
       </div>
@@ -84,17 +81,19 @@ function Dashboard() {
     );
   }
 
-  // Prepare line chart data (assignments due dates)
+  // ✅ Prepare line chart data (assignments due dates)
   const sortedAssignments = [...assignments].sort(
     (a, b) => new Date(a.due_date) - new Date(b.due_date)
   );
 
   const chartData = {
-    labels: sortedAssignments.map((a) => a.due_date),
+    labels: sortedAssignments.map((a) =>
+      new Date(a.due_date).toLocaleDateString()
+    ),
     datasets: [
       {
         label: "Assignments Due",
-        data: sortedAssignments.map((a, i) => i + 1),
+        data: sortedAssignments.map((_, i) => i + 1),
         borderColor: "#2980b9",
         backgroundColor: "rgba(41, 128, 185, 0.2)",
         tension: 0.3,
@@ -132,12 +131,8 @@ function Dashboard() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-          textAlign: "center",
-          transition: "transform 0.2s ease"
-        }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-5px)"}
-          onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
-        >
+          textAlign: "center"
+        }}>
           <h3 style={{ color: "#27ae60" }}>Courses</h3>
           <p style={{ fontSize: "24px", fontWeight: "bold" }}>{courses.length}</p>
         </div>
@@ -146,12 +141,8 @@ function Dashboard() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-          textAlign: "center",
-          transition: "transform 0.2s ease"
-        }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-5px)"}
-          onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
-        >
+          textAlign: "center"
+        }}>
           <h3 style={{ color: "#2980b9" }}>Assignments</h3>
           <p style={{ fontSize: "24px", fontWeight: "bold" }}>{assignments.length}</p>
         </div>
@@ -168,34 +159,6 @@ function Dashboard() {
               <Line data={chartData} options={chartOptions} />
             </div>
           )}
-
-          <div style={{ marginTop: "15px" }}>
-            <h4>Your Courses</h4>
-            {courses.length > 0 ? (
-              <ul>
-                {courses.map((course) => (
-                  <li key={course.id}>{course.title}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No courses found.</p>
-            )}
-          </div>
-
-          <div style={{ marginTop: "15px" }}>
-            <h4>Your Assignments</h4>
-            {assignments.length > 0 ? (
-              <ul>
-                {assignments.map((a) => (
-                  <li key={a.id}>
-                    {a.title} — Due: {a.due_date}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No assignments found.</p>
-            )}
-          </div>
         </div>
       )}
 
@@ -217,7 +180,7 @@ function Dashboard() {
           <h3 style={{ color: "#8e44ad" }}>Admin Dashboard</h3>
           <p>Oversee all users, courses, and analytics here.</p>
           <ul style={{ marginTop: "15px" }}>
-                        <li><a href="/users" style={{ color: "#8e44ad" }}>User Management</a></li>
+            <li><a href="/users" style={{ color: "#8e44ad" }}>User Management</a></li>
             <li><a href="/analytics" style={{ color: "#8e44ad" }}>System Analytics</a></li>
           </ul>
         </div>

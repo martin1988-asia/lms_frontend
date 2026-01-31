@@ -16,12 +16,14 @@ function UserManagement() {
       return;
     }
 
-    api.get("/api/accounts/users/") // ✅ endpoint to list all users
+    // ✅ Corrected endpoint (matches DRF router)
+    api.get("users/")
       .then((res) => {
         setUsers(res.data);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Error fetching users:", err.response?.data || err.message);
         setError("Failed to load users.");
         setLoading(false);
       });
@@ -32,10 +34,12 @@ function UserManagement() {
     setError("");
     setSuccess("");
     try {
-      await api.delete(`/api/accounts/users/${id}/`);
+      // ✅ Corrected endpoint
+      await api.delete(`users/${id}/`);
       setUsers(users.filter((user) => user.id !== id));
-      setSuccess("User deleted successfully!");
-    } catch {
+      setSuccess("✅ User deleted successfully!");
+    } catch (err) {
+      console.error("Delete error:", err.response?.data || err.message);
       setError("Failed to delete user.");
     }
   };
@@ -45,12 +49,14 @@ function UserManagement() {
     setError("");
     setSuccess("");
     try {
-      await api.patch(`/api/accounts/users/${id}/`, { role: newRole });
+      // ✅ Corrected endpoint
+      await api.patch(`users/${id}/`, { role: newRole });
       setUsers(users.map((user) =>
         user.id === id ? { ...user, role: newRole } : user
       ));
-      setSuccess("Role updated successfully!");
-    } catch {
+      setSuccess("✅ Role updated successfully!");
+    } catch (err) {
+      console.error("Role update error:", err.response?.data || err.message);
       setError("Failed to update role.");
     }
   };

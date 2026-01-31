@@ -30,41 +30,32 @@ function Analytics() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const role = localStorage.getItem("role");
 
   useEffect(() => {
-    api.get("/api/analytics/") // ✅ backend endpoint for analytics
+    api.get("analytics/")
       .then((res) => {
-        setStats(res.data);
+        // ✅ Handle both object and array responses
+        const data = Array.isArray(res.data) ? res.data[0] : res.data;
+        setStats(data);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Analytics error:", err.response?.data || err.message);
         setError("Failed to load analytics.");
         setLoading(false);
       });
   }, []);
 
-  // 🚫 Restrict access to admins
-  if (role !== "admin") {
-    return <p style={{ textAlign: "center", marginTop: "50px" }}>Access denied. Admins only.</p>;
-  }
-
-  // ⏳ Loading skeletons
   if (loading) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", padding: "20px" }}>
         {[...Array(4)].map((_, i) => (
-          <div key={i} style={{
-            background: "#eee",
-            height: "120px",
-            borderRadius: "8px"
-          }} />
+          <div key={i} style={{ background: "#eee", height: "120px", borderRadius: "8px" }} />
         ))}
       </div>
     );
   }
 
-  // ❌ Error recovery
   if (error) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -86,10 +77,8 @@ function Analytics() {
     );
   }
 
-  // 🎨 Dynamic colors
   const colors = ["#3498db", "#27ae60", "#8e44ad", "#e67e22"];
 
-  // 📊 Chart data
   const rolePieData = {
     labels: ["Users", "Courses", "Assignments", "Submissions"],
     datasets: [
@@ -131,20 +120,11 @@ function Analytics() {
   };
 
   return (
-    <div style={{
-      fontFamily: "Arial, sans-serif",
-      backgroundColor: "#f9f9f9",
-      minHeight: "100vh",
-      padding: "20px"
-    }}>
+    <div style={{ fontFamily: "Arial, sans-serif", backgroundColor: "#f9f9f9", minHeight: "100vh", padding: "20px" }}>
       <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>System Analytics</h2>
 
       {stats ? (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "1fr 1fr",
-          gap: "30px"
-        }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
           {/* Stats cards */}
           {[
             { label: "Users", value: stats.users, color: colors[0] },
@@ -157,12 +137,8 @@ function Analytics() {
               padding: "20px",
               borderRadius: "8px",
               boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-              textAlign: "center",
-              transition: "transform 0.2s ease"
-            }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-5px)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
-            >
+              textAlign: "center"
+            }}>
               <h3 style={{ color: card.color }}>{card.label}</h3>
               <p style={{ fontSize: "24px", fontWeight: "bold" }}>{card.value}</p>
             </div>

@@ -10,7 +10,8 @@ function GradeSubmissions() {
   const [editGrade, setEditGrade] = useState("");
 
   useEffect(() => {
-    api.get("/users/submissions/") // ✅ endpoint for instructor to view submissions
+    // ✅ Corrected endpoint
+    api.get("submissions/")
       .then((res) => {
         setSubmissions(res.data);
         setLoading(false);
@@ -26,7 +27,8 @@ function GradeSubmissions() {
     setSuccess("");
 
     try {
-      await api.patch(`/users/submissions/${id}/`, { grade });
+      // ✅ Corrected endpoint
+      await api.patch(`submissions/${id}/`, { grade });
       setSubmissions(
         submissions.map((s) =>
           s.id === id ? { ...s, grade } : s

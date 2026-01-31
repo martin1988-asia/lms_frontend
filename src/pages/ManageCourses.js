@@ -13,7 +13,8 @@ function ManageCourses() {
   const [editDescription, setEditDescription] = useState("");
 
   useEffect(() => {
-    api.get("/users/courses/")
+    // ✅ Corrected endpoint
+    api.get("courses/")
       .then((res) => {
         setCourses(res.data);
         setLoading(false);
@@ -29,7 +30,8 @@ function ManageCourses() {
     setError("");
     setSuccess("");
 
-    api.post("/users/courses/", { title, description })
+    // ✅ Corrected endpoint
+    api.post("courses/", { title, description })
       .then((res) => {
         setSuccess("Course created successfully!");
         setCourses([...courses, res.data]);
@@ -44,7 +46,8 @@ function ManageCourses() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
-      await api.delete(`/users/courses/${id}/`);
+      // ✅ Corrected endpoint
+      await api.delete(`courses/${id}/`);
       setCourses(courses.filter((course) => course.id !== id));
     } catch {
       alert("Failed to delete course.");
@@ -53,7 +56,8 @@ function ManageCourses() {
 
   const handleEditSave = async () => {
     try {
-      const res = await api.patch(`/users/courses/${editingCourse.id}/`, {
+      // ✅ Corrected endpoint
+      const res = await api.patch(`courses/${editingCourse.id}/`, {
         title: editTitle,
         description: editDescription,
       });
@@ -259,7 +263,7 @@ function ManageCourses() {
               />
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                            <button
+              <button
                 onClick={() => setEditingCourse(null)}
                 style={{
                   background: "#95a5a6",
@@ -267,7 +271,7 @@ function ManageCourses() {
                   border: "none",
                   padding: "8px 14px",
                   borderRadius: "4px",
-                  cursor: "pointer",
+                                    cursor: "pointer",
                   marginRight: "10px"
                 }}
               >

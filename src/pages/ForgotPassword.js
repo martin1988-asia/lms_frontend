@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
 function ForgotPassword() {
@@ -7,8 +8,10 @@ function ForgotPassword() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   const validateForm = () => {
-    if (!email.includes("@")) {
+    if (!email || !email.includes("@")) {
       setError("Please enter a valid email address.");
       return false;
     }
@@ -25,14 +28,28 @@ function ForgotPassword() {
 
     try {
       // ✅ Call backend forgot password endpoint
-      await api.post("/accounts/forgot-password/", { email });
+      const res = await api.post("/accounts/forgot-password/", { email });
+      console.log("Forgot password response:", res.data);
 
-      setSuccess("Password reset link sent! Check your email.");
+      setSuccess("✅ Password reset link sent! Check your email.");
+
+      // ✅ Optional: redirect to login after a short delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (err) {
+      console.error("Forgot password error:", err.response?.data || err.message);
       if (err.response?.status === 404) {
         setError("No account found with this email.");
+      } else if (err.response?.status === 400) {
+        setError("Invalid request. Please check your input.");
       } else {
-        setError("Server error. Please try again later.");
+        setError(
+          err.response?.data?.detail ||
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Server error. Please try again later."
+        );
       }
     } finally {
       setLoading(false);
